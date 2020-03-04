@@ -142,9 +142,13 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 				tf::StampedTransform camToMarker (t, image_msg->header.stamp, image_msg->header.frame_id, markerFrame.c_str());
     			tf_broadcaster->sendTransform(camToMarker);
 
+
+				//Get the pose of the tag in the camera frame, then the output frame (usually torso)
+				tf::Transform tagPoseOutput = CamToOutput * markerPose;
+
 				//Create the rviz visualization messages
-				tf::poseTFToMsg (markerPose, rvizMarker_.pose);
-				rvizMarker_.header.frame_id = image_msg->header.frame_id;
+				tf::poseTFToMsg (tagPoseOutput, rvizMarker_.pose);
+				rvizMarker_.header.frame_id = output_frame;
 				rvizMarker_.header.stamp = image_msg->header.stamp;
 				rvizMarker_.id = id;
 
@@ -195,9 +199,6 @@ void getCapCallback (const sensor_msgs::ImageConstPtr & image_msg)
 				}
 				rvizMarker_.lifetime = ros::Duration (1.0);
 				rvizMarkerPub_.publish (rvizMarker_);
-
-				//Get the pose of the tag in the camera frame, then the output frame (usually torso)
-				tf::Transform tagPoseOutput = CamToOutput * markerPose;
 
 				//Create the pose marker messages
 				ar_track_alvar_msgs::AlvarMarker ar_pose_marker;
